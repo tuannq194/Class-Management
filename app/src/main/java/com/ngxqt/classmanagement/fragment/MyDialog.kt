@@ -1,9 +1,8 @@
-package com.ngxqt.classmanagement
+package com.ngxqt.classmanagement.fragment
 
 import android.app.Dialog
 import android.os.Bundle
 import android.text.InputType
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
@@ -12,6 +11,9 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
+import com.ngxqt.classmanagement.model.ClassItem
+import com.ngxqt.classmanagement.R
+import com.ngxqt.classmanagement.model.StudentItem
 import com.ngxqt.classmanagement.databinding.DialogBinding
 
 class MyDialog constructor(var roll: Int?, var name: String?) : DialogFragment() {

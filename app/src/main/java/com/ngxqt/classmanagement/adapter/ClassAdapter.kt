@@ -1,16 +1,13 @@
-package com.ngxqt.classmanagement
+package com.ngxqt.classmanagement.adapter
 
-import android.util.Log
 import android.view.ContextMenu
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.OnCreateContextMenuListener
 import android.view.ViewGroup
 import android.widget.TextView
-import android.widget.Toast
-import androidx.paging.PagingDataAdapter
-import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.ngxqt.classmanagement.model.ClassItem
 import com.ngxqt.classmanagement.databinding.ClassItemBinding
 
 /** Code bị comment là phương án 2*/
@@ -18,7 +15,7 @@ class ClassAdapter(val classItems: ArrayList<ClassItem>):
     RecyclerView.Adapter<ClassAdapter.ClassViewHolder>(){
     //PagingDataAdapter<ClassItem,ClassAdapter.ClassViewHolder>(CLASS_COMPARATOR) {
 
-    private val onItemClickListener: OnItemClickListener ? = null
+    private val onItemClickListener: OnItemClickListener? = null
 
     interface OnItemClickListener{
         fun onItemClick(classItem: ClassItem)

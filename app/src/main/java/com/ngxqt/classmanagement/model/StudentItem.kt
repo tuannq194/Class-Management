@@ -1,4 +1,4 @@
-package com.ngxqt.classmanagement
+package com.ngxqt.classmanagement.model
 
 data class StudentItem(
     var sid: Long?,

@@ -1,4 +1,4 @@
-package com.ngxqt.classmanagement
+package com.ngxqt.classmanagement.fragment
 
 import android.app.DatePickerDialog
 import android.app.Dialog

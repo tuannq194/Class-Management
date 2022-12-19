@@ -1,22 +1,17 @@
-package com.ngxqt.classmanagement
+package com.ngxqt.classmanagement.adapter
 
 import android.graphics.Color
-import android.util.Log
 import android.view.ContextMenu
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import android.widget.Toast
 import androidx.cardview.widget.CardView
 import androidx.core.content.ContextCompat
-import androidx.paging.PagingDataAdapter
-import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.ngxqt.classmanagement.databinding.ClassItemBinding
+import com.ngxqt.classmanagement.R
+import com.ngxqt.classmanagement.model.StudentItem
 import com.ngxqt.classmanagement.databinding.StudentItemBinding
-import kotlinx.coroutines.withContext
-import kotlin.coroutines.coroutineContext
 
 class StudentAdapter(val studentItems: ArrayList<StudentItem>) :
     RecyclerView.Adapter<StudentAdapter.StudentViewHolder>() {
@@ -61,11 +56,17 @@ class StudentAdapter(val studentItems: ArrayList<StudentItem>) :
     private fun getColor(position: Int): Int {
         val status = studentItems.get(position).status
         if(status.equals("P")){
-            return Color.parseColor("#"+Integer.toHexString(ContextCompat.getColor(binding.root.context,R.color.present)))
+            return Color.parseColor("#"+Integer.toHexString(ContextCompat.getColor(binding.root.context,
+                R.color.present
+            )))
         }else if (status.equals("A")){
-            return Color.parseColor("#"+Integer.toHexString(ContextCompat.getColor(binding.root.context,R.color.absent)))
+            return Color.parseColor("#"+Integer.toHexString(ContextCompat.getColor(binding.root.context,
+                R.color.absent
+            )))
         }
-        return Color.parseColor("#"+Integer.toHexString(ContextCompat.getColor(binding.root.context,R.color.normal)))
+        return Color.parseColor("#"+Integer.toHexString(ContextCompat.getColor(binding.root.context,
+            R.color.normal
+        )))
     }
 
     override fun getItemCount(): Int {

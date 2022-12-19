@@ -1,14 +1,18 @@
-package com.ngxqt.classmanagement
+package com.ngxqt.classmanagement.activity
 
 import android.content.Intent
-import android.database.sqlite.SQLiteDatabase
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.ngxqt.classmanagement.*
+import com.ngxqt.classmanagement.adapter.StudentAdapter
 import com.ngxqt.classmanagement.databinding.ActivityStudentBinding
+import com.ngxqt.classmanagement.fragment.MyCalendar
+import com.ngxqt.classmanagement.fragment.MyDialog
+import com.ngxqt.classmanagement.model.StudentItem
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -40,9 +44,7 @@ class StudentActivity : AppCompatActivity() {
         cid = intent?.getLongExtra("cid",-1)!!
 
         setToolbar()
-
-
-
+        loadData()
         /**Cài đặt RecyclerView và Adapter để hiển thị item*/
         val recyclerView = binding.studentRecycler
         val layoutManager = LinearLayoutManager(this)
@@ -56,16 +58,16 @@ class StudentActivity : AppCompatActivity() {
             changStatus(it)
         }
 
-        readDataJson()
-        loadData()
+        //readDataJson()
+
         loadStatusData()
     }
 
     private fun readDataJson() {
-        val defaultIdArray = mutableListOf<Int>()
-        val defaultNameArray = mutableListOf<String>()
+        val defaultIdList = mutableListOf<Int>()
+        val defaultNameList = mutableListOf<String>()
 
-        /**Đọc listStudent.json*/
+        /**Đọc list_student.json*/
         val jsonData = applicationContext.resources.openRawResource(
             applicationContext.resources.getIdentifier(
                 "list_student",
@@ -77,13 +79,29 @@ class StudentActivity : AppCompatActivity() {
         for (i in 0 until outputJsonArray.length()){
             val defaultId =  Integer.parseInt(outputJsonArray.getJSONObject(i).getString("studentId"))
             val defaultName = outputJsonArray.getJSONObject(i).getString("studentName")
-            defaultIdArray.add(defaultId)
-            defaultNameArray.add(defaultName)
+            defaultIdList.add(defaultId)
+            defaultNameList.add(defaultName)
         }
 
-        //val defaultName = arrayOf("Nguyễn Quốc Tuấn","Hoàng Hải Na")
-        //val defaultId = arrayOf(20182864,20201234)
-        addDefaultStudent(defaultIdArray,defaultNameArray)
+        addDefaultStudent(defaultIdList,defaultNameList)
+    }
+
+    /**Đặt giá trị mặc định cho danh sách Student*/
+    private fun addDefaultStudent(defaultId: MutableList<Int>, defaultName: MutableList<String>) {
+        val cursor = dbHelper.getStudentTabale(cid!!)
+        //studentItems.clear()
+        if (cursor.count == 0){
+            for (i in 0..defaultId.size-1){
+                val roll = defaultId[i]
+                val name = defaultName[i]
+                Log.i("LOG_DEFAUL", i.toString()+" "+roll.toString()+" "+i.toString()+" "+name)
+                val sid = dbHelper.addStudent(cid!!,roll,name)
+                val studentItem = StudentItem(sid,roll,name,"A")
+                studentItems.add(studentItem)
+                studentAdapter.notifyDataSetChanged()
+            }
+        }
+        cursor.close()
     }
 
     private fun loadData() {
@@ -105,7 +123,9 @@ class StudentActivity : AppCompatActivity() {
         var status = studentItems.get(position).status
         if (status.equals("P")) {
             status = "A"
-        } else {
+        } else if (status.equals("A")) {
+            status = ""
+        } else{
             status = "P"
         }
         studentItems.get(position).status = status
@@ -147,7 +167,7 @@ class StudentActivity : AppCompatActivity() {
         for (i in nameArray.indices){
             nameArray[i] = studentItems.get(i).name
         }
-        val intent = Intent(this,SheetListActivity::class.java)
+        val intent = Intent(this, SheetListActivity::class.java)
         intent.putExtra("cid",cid)
         intent.putExtra("idArray", idArray)
         intent.putExtra("rollArray",rollArray)
@@ -171,7 +191,7 @@ class StudentActivity : AppCompatActivity() {
         for (studentItem: StudentItem in studentItems){
             val status = dbHelper.getStatus(studentItem.sid!!,calendar.getDate())
             if (status!=null){ studentItem.status = status }
-            else { studentItem.status=""}
+            else { studentItem.status="P"}
         }
         studentAdapter.notifyDataSetChanged()
     }
@@ -199,30 +219,10 @@ class StudentActivity : AppCompatActivity() {
 
     private fun addStudent(roll: Int, name: String) {
         val sid = dbHelper.addStudent(cid!!,roll,name)
-        val studentItem = StudentItem(sid,roll,name,"A")
+        val studentItem = StudentItem(sid,roll,name,"P")
         studentItems.add(studentItem)
         studentAdapter.notifyDataSetChanged()
         Toast.makeText(this,"Add Success",Toast.LENGTH_SHORT).show()
-    }
-
-    /**Đặt giá trị mặc định cho danh sách Student*/
-    private fun addDefaultStudent(defaultId: MutableList<Int>, defaultName: MutableList<String>) {
-        val cursor = dbHelper.getStudentTabale(cid!!)
-        //studentItems.clear()
-        if (cursor.count == 0){
-            for (i in 0..defaultId.size-1){
-                val roll = defaultId[i]
-                val name = defaultName[i]
-                Log.i("LOG_DEFAUL",
-                    i.toString()+" "+roll.toString()+" "+i.toString()+" "+name)
-                val sid = dbHelper.addStudent(cid!!,roll,name)
-                val studentItem = StudentItem(sid,roll,name,"A")
-                studentItems.add(studentItem)
-                studentAdapter.notifyDataSetChanged()
-                //Toast.makeText(this,"Add Default Success",Toast.LENGTH_SHORT).show()
-            }
-        }
-        cursor.close()
     }
 
     /**Bấm giữ item để Delete hoặc Update Class*/

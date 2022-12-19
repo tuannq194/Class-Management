@@ -1,11 +1,12 @@
-package com.ngxqt.classmanagement
+package com.ngxqt.classmanagement.activity
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.widget.ArrayAdapter
 import androidx.core.view.isInvisible
+import com.ngxqt.classmanagement.DbHelper
+import com.ngxqt.classmanagement.R
 import com.ngxqt.classmanagement.databinding.ActivitySheetListBinding
 import java.util.ArrayList
 
@@ -28,7 +29,7 @@ class SheetListActivity : AppCompatActivity() {
         cid = intent.getLongExtra("cid",-1)
 
         loadListItems()
-        adapter = ArrayAdapter(this,R.layout.sheet_list, R.id.date_list_item, listItems as List<String>)
+        adapter = ArrayAdapter(this, R.layout.sheet_list, R.id.date_list_item, listItems as List<String>)
         binding.sheetList.adapter = adapter
 
         binding.sheetList.setOnItemClickListener { parent, view, position, id ->
@@ -51,7 +52,7 @@ class SheetListActivity : AppCompatActivity() {
         val idArray  = intent.getLongArrayExtra("idArray")
         val rollArray = intent.getIntArrayExtra("rollArray")
         val nameArray = intent.getStringArrayExtra("nameArray")
-        val intent = Intent(this,SheetActivity::class.java)
+        val intent = Intent(this, SheetActivity::class.java)
 
         intent.putExtra("idArray",idArray)
         intent.putExtra("rollArray",rollArray)

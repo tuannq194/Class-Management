@@ -1,22 +1,23 @@
-package com.ngxqt.classmanagement
+package com.ngxqt.classmanagement.activity
 
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.MenuItem
 import android.widget.Toast
-import android.widget.Toolbar
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isGone
 import androidx.core.view.isInvisible
-import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import com.ngxqt.classmanagement.*
+import com.ngxqt.classmanagement.adapter.ClassAdapter
 import com.ngxqt.classmanagement.databinding.ActivityMainBinding
 import com.ngxqt.classmanagement.databinding.DialogBinding
 import com.ngxqt.classmanagement.databinding.ToolbarBinding
+import com.ngxqt.classmanagement.fragment.MyDialog
+import com.ngxqt.classmanagement.model.ClassItem
+import org.json.JSONArray
+import org.json.JSONObject
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -31,11 +32,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         dbHelper = DbHelper(this)
 
         binding.fabMain.setOnClickListener { showDialog() }
-
+        setToolbar()
         loadData()
 
         /**Cài đặt RecyclerView và Adapter để hiển thị item*/
@@ -52,7 +52,7 @@ class MainActivity : AppCompatActivity() {
             gotoItemActivity(it)
         }
 
-        setToolbar()
+        addDefaultClass("ET4710","Lập trình ứng dụng di động")
     }
 
     /**Load data Class từ Database*/
@@ -124,6 +124,57 @@ class MainActivity : AppCompatActivity() {
         classItems.add(classItem)
         classAdapter.notifyDataSetChanged()
         Toast.makeText(this,"Add Success",Toast.LENGTH_SHORT).show()
+    }
+
+    /**Đặt giá trị mặc định cho danh sách Class*/
+    private fun addDefaultClass(className: String, subjectName: String) {
+        val cursor = dbHelper.getClassTabale()
+        if (cursor.count == 0){
+            val cid = dbHelper.addClass(className,subjectName)
+            val classItem = ClassItem(cid,className,subjectName)
+            classItems.add(classItem)
+            classAdapter.notifyDataSetChanged()
+            readDataJson(cid)
+        }
+        cursor.close()
+    }
+
+    private fun readDataJson(cid: Long) {
+        val defaultIdList = mutableListOf<Int>()
+        val defaultNameList = mutableListOf<String>()
+
+        /**Đọc list_student.json*/
+        val jsonData = applicationContext.resources.openRawResource(
+            applicationContext.resources.getIdentifier(
+                "list_student",
+                "raw",applicationContext.packageName
+            )
+        ).bufferedReader().use { it.readText() }
+        val outputJsonArray = JSONObject(jsonData).getJSONArray("data") as JSONArray
+        /**Gán Data vào List*/
+        for (i in 0 until outputJsonArray.length()){
+            val defaultId =  Integer.parseInt(outputJsonArray.getJSONObject(i).getString("studentId"))
+            val defaultName = outputJsonArray.getJSONObject(i).getString("studentName")
+            defaultIdList.add(defaultId)
+            defaultNameList.add(defaultName)
+        }
+
+        addDefaultStudent(defaultIdList,defaultNameList,cid)
+    }
+
+    /**Đặt giá trị mặc định cho danh sách Student*/
+    private fun addDefaultStudent(defaultId: MutableList<Int>, defaultName: MutableList<String>, cid: Long) {
+        val cursor = dbHelper.getStudentTabale(cid!!)
+        //studentItems.clear()
+        if (cursor.count == 0){
+            for (i in 0..defaultId.size-1){
+                val roll = defaultId[i]
+                val name = defaultName[i]
+                Log.i("LOG_DEFAUL", i.toString()+" "+roll.toString()+" "+i.toString()+" "+name)
+                dbHelper.addStudent(cid!!,roll,name)
+            }
+        }
+        cursor.close()
     }
 
     /**Bấm giữ item để Delete hoặc Update Class*/
