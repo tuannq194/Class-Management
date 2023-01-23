@@ -11,18 +11,18 @@ import com.ngxqt.classmanagement.model.ClassItem
 import com.ngxqt.classmanagement.databinding.ClassItemBinding
 
 /** Code bị comment là phương án 2*/
-class ClassAdapter(val classItems: ArrayList<ClassItem>):
-    RecyclerView.Adapter<ClassAdapter.ClassViewHolder>(){
+class ClassAdapter(val classItems: ArrayList<ClassItem>) :
+    RecyclerView.Adapter<ClassAdapter.ClassViewHolder>() {
     //PagingDataAdapter<ClassItem,ClassAdapter.ClassViewHolder>(CLASS_COMPARATOR) {
 
     private val onItemClickListener: OnItemClickListener? = null
 
-    interface OnItemClickListener{
+    interface OnItemClickListener {
         fun onItemClick(classItem: ClassItem)
     }
 
-
     var onItemClick: ((Int) -> Unit)? = null
+
     inner class ClassViewHolder(private val binding: ClassItemBinding) :
         RecyclerView.ViewHolder(binding.root), OnCreateContextMenuListener {
 
@@ -36,9 +36,13 @@ class ClassAdapter(val classItems: ArrayList<ClassItem>):
             binding.root.setOnCreateContextMenuListener(this)
         }
 
-        override fun onCreateContextMenu(menu: ContextMenu?, v: View?, menuInfo: ContextMenu.ContextMenuInfo?) {
-            menu?.add(adapterPosition,0,0,"Edit")
-            menu?.add(adapterPosition,1,0,"Delete")
+        override fun onCreateContextMenu(
+            menu: ContextMenu?,
+            v: View?,
+            menuInfo: ContextMenu.ContextMenuInfo?
+        ) {
+            menu?.add(bindingAdapterPosition, 0, 0, "Edit")
+            menu?.add(bindingAdapterPosition, 1, 0, "Delete")
         }
 
         /*init {

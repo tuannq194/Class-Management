@@ -17,6 +17,7 @@ class StudentAdapter(val studentItems: ArrayList<StudentItem>) :
     RecyclerView.Adapter<StudentAdapter.StudentViewHolder>() {
 
     var onItemClick: ((Int) -> Unit)? = null
+    var onContactClick: ((Int) -> Unit)? = null
 
     lateinit var binding: StudentItemBinding
     inner class StudentViewHolder(private val binding: StudentItemBinding) :
@@ -32,6 +33,9 @@ class StudentAdapter(val studentItems: ArrayList<StudentItem>) :
                 onItemClick?.invoke(layoutPosition)
             }
             binding.root.setOnCreateContextMenuListener(this)
+            binding.buttonMess.setOnClickListener {
+                onContactClick?.invoke(layoutPosition)
+            }
         }
 
         override fun onCreateContextMenu(menu: ContextMenu?, v: View?, menuInfo: ContextMenu.ContextMenuInfo?) {

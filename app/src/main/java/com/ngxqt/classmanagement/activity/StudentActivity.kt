@@ -3,6 +3,7 @@ package com.ngxqt.classmanagement.activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -10,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.ngxqt.classmanagement.*
 import com.ngxqt.classmanagement.adapter.StudentAdapter
 import com.ngxqt.classmanagement.databinding.ActivityStudentBinding
+import com.ngxqt.classmanagement.databinding.StudentItemBinding
 import com.ngxqt.classmanagement.fragment.MyCalendar
 import com.ngxqt.classmanagement.fragment.MyDialog
 import com.ngxqt.classmanagement.model.StudentItem
@@ -19,7 +21,6 @@ import org.json.JSONObject
 
 class StudentActivity : AppCompatActivity() {
     private lateinit var binding: ActivityStudentBinding
-
     lateinit var dbHelper: DbHelper
     lateinit var studentAdapter: StudentAdapter
     val studentItems: ArrayList<StudentItem> = ArrayList()
@@ -34,7 +35,6 @@ class StudentActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityStudentBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         calendar = MyCalendar()
         dbHelper = DbHelper(this)
         //val intent = intent.extras
@@ -57,10 +57,22 @@ class StudentActivity : AppCompatActivity() {
         studentAdapter.onItemClick = {
             changStatus(it)
         }
+        studentAdapter.onContactClick = {
+            gotoContactActivity(it)
+        }
 
-        //readDataJson()
-
+        readDataJson()
         loadStatusData()
+
+    }
+
+    private fun gotoContactActivity(position: Int) {
+        //Toast.makeText(this,"Contact " + studentItems.get(position).roll, Toast.LENGTH_SHORT).show()
+        val intent = Intent(this, ContactActivity::class.java)
+        intent.putExtra("studentName", studentItems.get(position).name)
+        intent.putExtra("studentId", studentItems.get(position).roll)
+        intent.putExtra("studentPhone", "0347846669")
+        startActivity(intent)
     }
 
     private fun readDataJson() {

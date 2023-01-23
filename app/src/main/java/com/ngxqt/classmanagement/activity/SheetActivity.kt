@@ -1,21 +1,37 @@
 package com.ngxqt.classmanagement.activity
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
+import android.os.StrictMode
 import android.util.Log
 import android.widget.TableLayout
 import android.widget.TableRow
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toUri
 import androidx.core.view.isInvisible
+import com.itextpdf.text.Paragraph
 import com.ngxqt.classmanagement.DbHelper
+import com.ngxqt.classmanagement.PdfService
+import com.ngxqt.classmanagement.R
 import com.ngxqt.classmanagement.databinding.ActivitySheetBinding
+import java.io.File
 import java.util.*
+import com.ngxqt.classmanagement.PdfService.*
+import java.util.logging.FileHandler
 
 
 class SheetActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySheetBinding
+
+    private var tableData = mutableListOf<String>()
+    private var pdfService = PdfService()
+
+    private val day_of_month = 31
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,6 +47,7 @@ class SheetActivity : AppCompatActivity() {
             titleToolbar.setText(className)
             subtitleToolbar.setText("Attendance Table | "+month)
             back.setOnClickListener { onBackPressed() }
+            //save.setOnClickListener { createPdf() }
             save.isInvisible = true
         }
     }
@@ -47,7 +64,7 @@ class SheetActivity : AppCompatActivity() {
         setToolbar(month!!)
 
         //val DAY_IN_MONTH = getDayInMonth(month!!)
-        val day_of_month = 31
+
         val rowSize: Int = idArray!!.size + 1
 
         val rows = arrayOfNulls<TableRow>(rowSize)
@@ -131,9 +148,11 @@ class SheetActivity : AppCompatActivity() {
             total_tvs[i]!!.setPadding(16, 16, 16, 16)
 
 
-            rows[i]!!.addView(roll_tvs[i])
-            rows[i]!!.addView(name_tvs[i])
-            rows[i]!!.addView(total_tvs[i])
+            rows[i]!!.apply {
+                addView(roll_tvs[i])
+                addView(name_tvs[i])
+                addView(total_tvs[i])
+            }
 
             for (j in 1..day_of_month step 1) {
                 status_tvs[i][j]!!.setPadding(16, 16, 16, 16)
@@ -154,5 +173,115 @@ class SheetActivity : AppCompatActivity() {
         calendar.set(Calendar.MONTH, monthIndex)
         calendar.set(Calendar.YEAR, year)
         return calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
+    }
+
+    /** creat pdf*/
+    private fun createPdf() {
+        val onError: (Exception) -> Unit = { toastErrorMessage(it.message.toString()) }
+        val onFinish: (File) -> Unit = { openFile(it) }
+        val paragraphList = listOf(getString(R.string.paragraph1), getString(R.string.paragraph2))
+        //pdfService = PdfService()
+        createUserTable(
+            data = tableData,
+            paragraphList = paragraphList,
+            onFinish = onFinish,
+            onError = onError
+        )
+    }
+
+    private fun openFile(file: File) {
+        val path = "đây là path"
+        val pdfFile = File(path)
+        val builder = StrictMode.VmPolicy.Builder()
+        StrictMode.setVmPolicy(builder.build())
+        builder.detectFileUriExposure()
+        val pdfIntent = Intent(Intent.ACTION_VIEW)
+        pdfIntent.setDataAndType(pdfFile.toUri(), "application/pdf")
+        pdfIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+        try {
+            startActivity(pdfIntent)
+        } catch (e: ActivityNotFoundException) {
+            toastErrorMessage("Can't read pdf file")
+        }
+    }
+
+    fun createUserTable(
+        data: List<String>,
+        paragraphList: List<String>,
+        onFinish: (file: File) -> Unit,
+        onError: (Exception) -> Unit
+    ) {
+        //Define the document
+        val file = pdfService.createFile("Pdf to export.pdf")
+        val document = pdfService.createDocument()
+
+        //Setup PDF Writer
+        pdfService.setupPdfWriter(document, file)
+
+        //Add Title
+        document.add(Paragraph("Paragraph Title", pdfService.TITLE_FONT))
+        //Add Empty Line as necessary
+        pdfService.addLineSpace(document, 1)
+
+        //Add paragraph
+        paragraphList.forEach {content->
+            val paragraph = pdfService.createParagraph(content)
+            document.add(paragraph)
+        }
+
+        //Add Empty Line as necessary
+        pdfService.addLineSpace(document, 1)
+
+        //Add table title
+        document.add(Paragraph("ATTENDANCE TABLE", pdfService.TITLE_FONT))
+        pdfService.addLineSpace(document, 1)
+
+        //Define Table
+        val idWidth = 0.2f
+        val nameWidth = 1f
+        val totalAbsenceWidth = 1f
+        val lastNameWidth = 1f
+        val columnWidth = floatArrayOf(idWidth,nameWidth,totalAbsenceWidth,lastNameWidth)
+        val table = pdfService.createTable(day_of_month+3, columnWidth)
+        //Table header (first row)
+        val tableHeaderContent = mutableListOf("ID", "Name", "Total\nAbsence","tEST")
+        //for (i in 1..31) tableHeaderContent.add(i.toString())
+        //write table header into table
+        tableHeaderContent.forEach {
+            //define a cell
+            val cell = pdfService.createCell(it)
+            //add our cell into our table
+            table.addCell(cell)
+        }
+
+        //write user data into table
+        data.forEach {
+            //Write Each User Id
+            val idCell = pdfService.createCell("test")
+            table.addCell(idCell)
+            //Write Each First Name
+            val firstNameCell = pdfService.createCell("test")
+            table.addCell(firstNameCell)
+            //Write Each Middle Name
+            val middleNameCell = pdfService.createCell("test")
+            table.addCell(middleNameCell)
+            //Write Each Last Name
+            val lastNameCell = pdfService.createCell("test")
+            table.addCell(lastNameCell)
+        }
+        document.add(table)
+        document.close()
+
+        try {
+            pdfService.pdf.close()
+        } catch (ex: Exception) {
+            onError(ex)
+        } finally {
+            onFinish(file)
+        }
+    }
+
+    private fun toastErrorMessage(s: String) {
+        Toast.makeText(this, s, Toast.LENGTH_SHORT).show()
     }
 }

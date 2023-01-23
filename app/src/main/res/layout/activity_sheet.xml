@@ -31,8 +31,6 @@
                     android:showDividers="beginning|middle|end"
                     android:stretchColumns="*"/>
             </LinearLayout>
-
-
         </HorizontalScrollView>
     </ScrollView>
 </LinearLayout>
